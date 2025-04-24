@@ -42,6 +42,24 @@ ffmpeg -version
   - [Cut and combine multiple sections of multiple files](#cut-and-combine-multiple-sections-of-multiple-files "Scroll to this section")
   - [Create/download video with m3u8 playlist](#createdownload-video-with-m3u8-playlist "Scroll to this section")
   - [find silence parts in video](#find-silence-parts-in-video "Scroll to this section")
+- [Libavfilter virtual input device (lavfi filtergraph)](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to this section")
+  - [sierpinski (pan)](#sierpinski-pan "Scroll to this section")
+  - [mandelbrot (zoom)](#mandelbrot-zoom "Scroll to this section")
+  - [(elementary) cellular automaton](#elementary-cellular-automaton "Scroll to this section")
+  - [life (Cellular automaton)](#life-cellular-automaton "Scroll to this section")
+  - [mptestsrc (animated test patterns)](#mptestsrc-animated-test-patterns "Scroll to this section")
+  - [empty (input)](#empty-input "Scroll to this section")
+  - [color (input)](#color-input "Scroll to this section")
+  - [smptebars (input)](#smptebars-input "Scroll to this section")
+  - [smptehdbars (input)](#smptehdbars-input "Scroll to this section")
+  - [testsrc (input)](#testsrc-input "Scroll to this section")
+  - [testsrc2 (input)](#testsrc2-input "Scroll to this section")
+  - [rgbtestsrc (input)](#rgbtestsrc-input "Scroll to this section")
+  - [yuvtestsrc (input)](#yuvtestsrc-input "Scroll to this section")
+  - [colorspectrum (input)](#colorspectrum-input "Scroll to this section")
+  - [colorchart (input)](#colorchart-input "Scroll to this section")
+  - [allrgb (input)](#allrgb-input "Scroll to this section")
+  - [allyuv (input)](#allyuv-input "Scroll to this section")
 
 ## FFplay video viewing
 
@@ -70,7 +88,7 @@ Scroll [UP](#ffplay-video-viewing "Scroll to beginning of FFplay section")
 
 ```shell
 # random simulation, window size 1280*960 (4 times 320*240, which is the default size)
-ffplay -v level+warning -stats -f lavfi life=mold=25:life_color=#00ff00:death_color=#aa0000,scale=4*iw:-1:flags=neighbor:eval=init
+ffplay -v level+warning -stats -f lavfi life=mold=25:life_color=\#00ff00:death_color=\#aa0000,scale=4*iw:-1:flags=neighbor:eval=init
 ```
 
 A window will show the simulation infinitly (see [FFplay video controls](#ffplay-video-controls "Scroll to this section"))
@@ -82,7 +100,8 @@ A window will show the simulation infinitly (see [FFplay video controls](#ffplay
 - [`-v` documentation](https://ffmpeg.org/ffplay-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
 - [`-stats` documentation](https://ffmpeg.org/ffplay-all.html#:~:text=%2Dstats,-Print%20several%20playback%20statistics "Documentation of `-stats`")
 - see [life (cellular automaton)](#life-cellular-automaton "Scroll to this section") section below
-- [`scale` filter documentation](https://ffmpeg.org/ffmpeg-all.html#scale-1 "Documentation of `scale` filter")
+- [`scale` filter documentation](https://ffmpeg.org/ffmpeg-all.html#scale "Documentation of `scale` filter")
+  - [`flags` option (scaler options: `sws_flags`) scaling algorithm](https://ffmpeg.org/ffmpeg-all.html#sws_005fflags "Documentation of `sws_flags` scaling algorithms (`scale` filter uses these for its `flags` option)")
 
 Scroll [UP](#ffplay-video-viewing "Scroll to beginning of FFplay section")
     | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
@@ -543,7 +562,7 @@ file 'INPUT_1.mp4'
   - can also be read from a file via `-filter_complex_script` with `path/to/file.txt`, although this is not mentioned in the official documentation.
   - [concat multimedia filter](https://ffmpeg.org/ffmpeg-all.html#concat-3 "Documentation of concat filter (for `-filter_complex`)")
 - [`-map` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dmap%20%5B%2D%5Dinput_file_id%5B%3Astream_specifier%5D%5B%3F%5D%20%7C%20%5Blinklabel%5D%20(output) "Documentation of `-map [-]input_file_id[:stream_specifier][?] | [linklabel] (output)`")
-- [concat demuxer documentation](https://ffmpeg.org/ffmpeg-all.html#concat-1 "Documentation of concat demuxer")
+- [concat demuxer documentation](https://ffmpeg.org/ffmpeg-all.html#concat "Documentation of concat demuxer")
 - [`-safe` option for concat demuxer](https://ffmpeg.org/ffmpeg-all.html#:~:text=safe,-if%20set%20to%201%2C%20reject%20unsafe%20file%20paths%20and%20directives "Documentation of `-safe` option for the concat demuxer")
 - [`-c` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dc%5B%3Astream_specifier%5D%20codec%20(input/output%2Cper%2Dstream) "Documentation of `-c[:stream_specifier] codec (input/output,per-stream)`")
   - [Stream specifiers documentation](https://ffmpeg.org/ffmpeg-all.html#Stream-specifiers "Documentation of stream specifiers for `-c`")
@@ -670,4 +689,587 @@ look for `[silencedetect @ *` lines in log file
 ```
 
 Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+## Libavfilter virtual input device (lavfi filtergraph)
+
+Create new videos via [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device") and a [video source](https://ffmpeg.org/ffmpeg-all.html#Video-Sources "Documentation of different video sources").
+
+- [sierpinski (pan)](#sierpinski-pan "Scroll to this section")
+- [mandelbrot (zoom)](#mandelbrot-zoom "Scroll to this section")
+- [(elementary) cellular automaton](#elementary-cellular-automaton "Scroll to this section")
+- [life (Cellular automaton)](#life-cellular-automaton "Scroll to this section")
+- [mptestsrc (animated test patterns)](#mptestsrc-animated-test-patterns "Scroll to this section")
+- [empty (input)](#empty-input "Scroll to this section")
+- [color (input)](#color-input "Scroll to this section")
+- [smptebars (input)](#smptebars-input "Scroll to this section")
+- [smptehdbars (input)](#smptehdbars-input "Scroll to this section")
+- [testsrc (input)](#testsrc-input "Scroll to this section")
+- [testsrc2 (input)](#testsrc2-input "Scroll to this section")
+- [rgbtestsrc (input)](#rgbtestsrc-input "Scroll to this section")
+- [yuvtestsrc (input)](#yuvtestsrc-input "Scroll to this section")
+- [colorspectrum (input)](#colorspectrum-input "Scroll to this section")
+- [colorchart (input)](#colorchart-input "Scroll to this section")
+- [allrgb (input)](#allrgb-input "Scroll to this section")
+- [allyuv (input)](#allyuv-input "Scroll to this section")
+
+Honorable mention: [`ddagrab`](https://ffmpeg.org/ffmpeg-all.html#ddagrab "Documentation of ddgrab video source") which can be used to capture (Windows) desktop screen (/-cutout).
+
+Scroll [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### sierpinski (pan)
+
+Random pan of sierpinski carpet/triangle fractal.
+
+defaults: `s=640x480`, `r=25` (fps), and `type=carpet`
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i sierpinski OUTPUT.mp4
+ffmpeg -v level+warning -stats -f lavfi -i sierpinski=type=triangle OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`sierpinski` video source](https://ffmpeg.org/ffmpeg-all.html#sierpinski "Documentation of sierpinski video source")
+
+<blockquote>
+
+<video id="lavfi_sierpinski.mp4" controls loop autoplay muted height="300" src="./example/lavfi_sierpinski.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i sierpinski -t 60 lavfi_sierpinski.mp4">lavfi_sierpinski.mp4</video>
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i sierpinski -t 60 lavfi_sierpinski.mp4
+```
+
+</blockquote>
+
+<blockquote>
+
+<video id="lavfi_sierpinski_triangle.mp4" controls loop autoplay muted height="300" src="./example/lavfi_sierpinski_triangle.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i sierpinski=type=triangle -t 60 lavfi_sierpinski_triangle.mp4">lavfi_sierpinski_triangle.mp4</video>
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i sierpinski=type=triangle -t 60 lavfi_sierpinski_triangle.mp4
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### mandelbrot (zoom)
+
+Continuous zoom into the Mandelbrot set.
+
+> <https://en.wikipedia.org/wiki/Mandelbrot_set>
+
+```shell
+# Mandelbrot with the "inside" set to black (how it usually is displayed)
+# default: 640*480 25fps and position:
+# X = -0.743643887037158704752191506114774 (real axis)
+# Y = -0.131825904205311970493132056385139 (imaginary axis, inverted to how it usually is displayed)
+ffmpeg -v level+warning -stats -f lavfi -i mandelbrot=inner=black -t 60 OUTPUT.mp4
+# limited to 60sec
+# ! the frame generation gets slower the further in the zoom
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`mandelbrot` video source](https://ffmpeg.org/ffmpeg-all.html#mandelbrot "Documentation of mandelbrot video source")
+
+<blockquote>
+
+<video id="lavfi_mandelbrot_black_blur.mp4" controls loop autoplay muted height="300" src="./example/lavfi_mandelbrot_black_blur.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i mandelbrot=inner=black:s=300x300:end_pts=75,avgblur=1 -t 43 lavfi_mandelbrot_black_blur.mp4">lavfi_mandelbrot_black_blur.mp4</video>
+
+_speed up and blured to decrease file size_
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i mandelbrot=inner=black:s=300x300:end_pts=75,avgblur=1 -t 43 lavfi_mandelbrot_black_blur.mp4
+```
+
+</blockquote>
+
+> Also, see the same zoom (position, vertically flipped so it looks the same) in my (interactive) Mandelbrot viewer:
+>
+> <https://maz01001.github.io/AlmondBreadErkunder/#0:7189,null,-1.3,1.99:-0.7436438870371698,-0.7436438870371482,0.13182590420530219,0.13182590420532267>
+>
+> Source code and documentation (controls): <https://github.com/MAZ01001/AlmondBreadErkunder>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### (elementary) cellular automaton
+
+"Waterfall" of a 1D cellular automaton.
+
+> <https://en.wikipedia.org/wiki/Elementary_cellular_automaton>
+
+```shell
+# random seed, no custom pattern, rule 18, start with an empty screen
+# fallback/defaults: s=320x508 r=24 rule=110
+ffmpeg -v level+warning -stats -f lavfi -i cellauto=full=0 -t 60 OUTPUT.mp4
+# limited to 60sec
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`cellauto` video source](https://ffmpeg.org/ffmpeg-all.html#cellauto "Documentation of cellauto video source")
+
+<blockquote>
+
+<video id="lavfi_cellauto_3.mp4" controls loop autoplay muted height="300" src="./example/lavfi_cellauto_3.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i cellauto=full=0:seed=3 -t 60 lavfi_cellauto_3.mp4">lavfi_cellauto_3.mp4</video>
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i cellauto=full=0:seed=3 -t 60 lavfi_cellauto_3.mp4
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### life (Cellular automaton)
+
+2D cellular automaton.
+
+> <https://en.wikipedia.org/wiki/Cellular_automaton>
+
+```shell
+# Conway's Game of Life
+# default: random grid 320*240 25fps rule S23/B3 (stay alive with 2/3 neighbors and born with 3 neighbors)
+ffmpeg -v level+warning -stats -f lavfi -i life -t 60 OUTPUT.mp4
+# limited to 60sec
+
+# as above but with green color and a red afterglow of dying cells
+ffmpeg -v level+warning -stats -f lavfi -i life=mold=25:life_color=\#00ff00:death_color=\#aa0000 -t 60 OUTPUT.mp4
+# limited to 60sec
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`life` video source](https://ffmpeg.org/ffmpeg-all.html#life "Documentation of life video source")
+
+<blockquote>
+
+<video id="lavfi_life_3_200x200_scaled.mp4" controls loop autoplay muted height="300" src="./example/lavfi_life_3_200x200_scaled.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i life=mold=25:life_color=\#00ff00:death_color=\#aa0000:seed=3:s=200x200,scale=4*iw:-1:flags=neighbor -t 124 lavfi_life_3_200x200_scaled.mp4">lavfi_life_3_200x200_scaled.mp4</video>
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i life=mold=25:life_color=\#00ff00:death_color=\#aa0000:seed=3:s=200x200,scale=4*iw:-1:flags=neighbor -t 124 lavfi_life_3_200x200_scaled.mp4
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### mptestsrc (animated test patterns)
+
+These patterns are equal to those from the _MPlayer_ test filter.
+
+default: `r=25` (fps) `t=all` (all 10 tests repeating) `m=30` (frames per test) `d=-1` (infinite duration)
+
+tests: `dc_luma`, `dc_chroma`, `freq_luma`, `freq_chroma`, `amp_luma`, `amp_chroma`, `cbp`, `mv`, `ring1`, and `ring2`.
+
+```shell
+# 60sec, all tests (each 3sec)
+ffmpeg -v level+warning -stats -f lavfi -i mptestsrc=m=3*25:d=60 OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`mptestsrc` video source](https://ffmpeg.org/ffmpeg-all.html#mptestsrc "Documentation of mptestsrc video source")
+
+<blockquote>
+
+<video id="lavfi_mptestsrc_all_3s.mp4" controls loop autoplay muted height="300" src="./example/lavfi_mptestsrc_all_3s.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i mptestsrc=m=3*25:d=60 lavfi_mptestsrc_all_3s.mp4">lavfi_mptestsrc_all_3s.mp4</video>
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i mptestsrc=m=3*25:d=60 lavfi_mptestsrc_all_3s.mp4
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### empty (input)
+
+default: `s=320x240`, `r=25` (fps), and `d=-1` (infinite duration)
+
+```shell
+# 1sec 1920*1080 60fps nothing (green)
+ffmpeg -v level+warning -stats -f lavfi -i nullsrc=s=1920x1080:r=60:d=1 OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`nullsrc` video source](https://ffmpeg.org/ffmpeg-all.html#nullsrc "Documentation of nullsrc video source")
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### color (input)
+
+default: `s=320x240`, `r=25` (fps), and `d=-1` (infinite duration)
+
+```shell
+# 1sec solid color #ff9900
+# default: 320*240 25 fps
+ffmpeg -v level+warning -stats -f lavfi -i color=c=\#ff9900:d=1 OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`color` video source](https://ffmpeg.org/ffmpeg-all.html#color "Documentation of color video source")
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### smptebars (input)
+
+default: `s=320x240`, `r=25` (fps), and `d=-1` (infinite duration)
+
+```shell
+# color bars pattern, based on the SMPTE Engineering Guideline EG 1-1990
+ffmpeg -v level+warning -stats -f lavfi -i smptebars OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`smptebars` video source](https://ffmpeg.org/ffmpeg-all.html#smptebars "Documentation of smptebars video source")
+
+<blockquote>
+
+<img id="lavfi_smptebars.png" height="300" src="./example/lavfi_smptebars.png" alt="lavfi_smptebars.png" title="ffmpeg -v level+warning -stats -f lavfi -i smptebars -frames 1 lavfi_smptebars.png">
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i smptebars -frames 1 lavfi_smptebars.png
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### smptehdbars (input)
+
+default: `s=320x240`, `r=25` (fps), and `d=-1` (infinite duration)
+
+```shell
+# color bars pattern, based on the SMPTE RP 219-2002
+ffmpeg -v level+warning -stats -f lavfi -i smptehdbars OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`smptehdbars` video source](https://ffmpeg.org/ffmpeg-all.html#smptehdbars "Documentation of smptehdbars video source")
+
+<blockquote>
+
+<img id="lavfi_smptehdbars.png" height="300" src="./example/lavfi_smptehdbars.png" alt="lavfi_smptehdbars.png" title="ffmpeg -v level+warning -stats -f lavfi -i smptehdbars -frames 1 lavfi_smptehdbars.png">
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i smptehdbars -frames 1 lavfi_smptehdbars.png
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### testsrc (input)
+
+default: `s=320x240`, `r=25` (fps), `d=-1` (infinite duration), and `n=0` ($\displaystyle\textit{timestamp}\cdot10^n$)
+
+_`n=0` shows timestamp in seconds and `n=3` shows timestamp in milliseconds_
+
+```shell
+# test pattern with animated gradient and timecode (seconds)
+ffmpeg -v level+warning -stats -f lavfi -i testsrc OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`testsrc` video source](https://ffmpeg.org/ffmpeg-all.html#testsrc "Documentation of testsrc video source")
+
+<blockquote>
+
+<video id="lavfi_testsrc_n3.mp4" controls loop autoplay muted height="300" src="./example/lavfi_testsrc_n3.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i testsrc=n=3:d=60 lavfi_testsrc_n3.mp4">lavfi_testsrc_n3.mp4</video>
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i testsrc=n=3:d=60 lavfi_testsrc_n3.mp4
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### testsrc2 (input)
+
+default: `s=320x240`, `r=25` (fps), `d=-1` (infinite duration), and `alpha=255` (opacity of background, 0 to 255)
+
+_I couldn't see a difference with different `alpha` values, at least for `mp4`/`webm`/`webp`/`png`/`gif` file-formats_
+
+```shell
+# animated test pattern
+ffmpeg -v level+warning -stats -f lavfi -i testsrc2 OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`testsrc2` video source](https://ffmpeg.org/ffmpeg-all.html#testsrc2 "Documentation of testsrc2 video source")
+
+<blockquote>
+
+<video id="lavfi_testsrc2.mp4" controls loop autoplay muted height="300" src="./example/lavfi_testsrc2.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i testsrc2=d=60 lavfi_testsrc2.mp4">lavfi_testsrc2.mp4</video>
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i testsrc2=d=60 lavfi_testsrc2.mp4
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### rgbtestsrc (input)
+
+default: `s=320x240`, `r=25` (fps), and `d=-1` (infinite duration)
+
+```shell
+# RGB test pattern (useful for detecting RGB vs BGR issues)
+ffmpeg -v level+warning -stats -f lavfi -i rgbtestsrc OUTPUT.mp4
+# there should be red, green, and blue stripes from top to bottom
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`rgbtestsrc` video source](https://ffmpeg.org/ffmpeg-all.html#rgbtestsrc "Documentation of rgbtestsrc video source")
+
+<blockquote>
+
+<img id="lavfi_rgbtestsrc.png" height="300" src="./example/lavfi_rgbtestsrc.png" alt="lavfi_rgbtestsrc.png" title="ffmpeg -v level+warning -stats -f lavfi -i rgbtestsrc -frames 1 lavfi_rgbtestsrc.png">
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i rgbtestsrc -frames 1 lavfi_rgbtestsrc.png
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### yuvtestsrc (input)
+
+default: `s=320x240`, `r=25` (fps), and `d=-1` (infinite duration)
+
+```shell
+# YUV test pattern
+ffmpeg -v level+warning -stats -f lavfi -i yuvtestsrc OUTPUT.mp4
+# Y (luminance, black/white)
+# Cb (blue-difference chroma, yellow/grey/blue)
+# Cr (red-difference chroma, turquoise/grey/red)
+```
+
+> <https://en.wikipedia.org/wiki/YCbCr>
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`yuvtestsrc` video source](https://ffmpeg.org/ffmpeg-all.html#yuvtestsrc "Documentation of yuvtestsrc video source")
+
+<blockquote>
+
+<img id="lavfi_yuvtestsrc.png" height="300" src="./example/lavfi_yuvtestsrc.png" alt="lavfi_yuvtestsrc.png" title="ffmpeg -v level+warning -stats -f lavfi -i yuvtestsrc -frames 1 lavfi_yuvtestsrc.png">
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i yuvtestsrc -frames 1 lavfi_yuvtestsrc.png
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### colorspectrum (input)
+
+default: `s=320x240`, `r=25` (fps), `d=-1` (infinite duration), and `type=black` (`black`/`white`/`all`)
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i colorspectrum OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`colorspectrum` video source](https://ffmpeg.org/ffmpeg-all.html#colorspectrum "Documentation of colorspectrum video source")
+
+<blockquote>
+
+<img id="lavfi_colorspectrum_black.png" height="300" src="./example/lavfi_colorspectrum_black.png" alt="lavfi_colorspectrum_black.png" title="ffmpeg -v level+warning -stats -f lavfi -i colorspectrum -frames 1 lavfi_colorspectrum_black.png">
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i colorspectrum -frames 1 lavfi_colorspectrum_black.png
+```
+
+</blockquote>
+
+<blockquote>
+
+<img id="lavfi_colorspectrum_white.png" height="300" src="./example/lavfi_colorspectrum_white.png" alt="lavfi_colorspectrum_white.png" title="ffmpeg -v level+warning -stats -f lavfi -i colorspectrum=type=white -frames 1 lavfi_colorspectrum_white.png">
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i colorspectrum=type=white -frames 1 lavfi_colorspectrum_white.png
+```
+
+</blockquote>
+
+<blockquote>
+
+<img id="lavfi_colorspectrum_all.png" height="300" src="./example/lavfi_colorspectrum_all.png" alt="lavfi_colorspectrum_all.png" title="ffmpeg -v level+warning -stats -f lavfi -i colorspectrum=type=all -frames 1 lavfi_colorspectrum_all.png">
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i colorspectrum=type=all -frames 1 lavfi_colorspectrum_all.png
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### colorchart (input)
+
+default: `s=320x240`, `r=25` (fps), `d=-1` (infinite duration), `preset=reference` (`reference`/`skintones`), and `patch_size=64x64` (size of each tile)
+
+```shell
+# colors checker chart (6↔ * 4↕ = 24 tiles)
+ffmpeg -v level+warning -stats -f lavfi -i colorchart OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`colorchart` video source](https://ffmpeg.org/ffmpeg-all.html#colorchart "Documentation of colorchart video source")
+
+<blockquote>
+
+<img id="lavfi_colorchart_reference_32x32.png" height="300" src="./example/lavfi_colorchart_reference_32x32.png" alt="lavfi_colorchart_reference_32x32.png" title="ffmpeg -v level+warning -stats -f lavfi -i colorchart=patch_size=32x32 -frames 1 lavfi_colorchart_reference_32x32.png">
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i colorchart=patch_size=32x32 -frames 1 lavfi_colorchart_reference_32x32.png
+```
+
+</blockquote>
+
+<blockquote>
+
+<img id="lavfi_colorchart_skintones_32x32.png" height="300" src="./example/lavfi_colorchart_skintones_32x32.png" alt="lavfi_colorchart_skintones_32x32.png" title="ffmpeg -v level+warning -stats -f lavfi -i colorchart=preset=skintones:patch_size=32x32 -frames 1 lavfi_colorchart_skintones_32x32.png">
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i colorchart=preset=skintones:patch_size=32x32 -frames 1 lavfi_colorchart_skintones_32x32.png
+```
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### allrgb (input)
+
+default: `r=25` (fps), and `d=-1` (infinite duration)
+
+> [!IMPORTANT]
+>
+> fixed size of `4096x4096` (use `scale` filter to change size)
+
+```shell
+# all rgb colors (static 4096x4096 frames)
+ffmpeg -v level+warning -stats -f lavfi -i allrgb OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`allrgb` video source](https://ffmpeg.org/ffmpeg-all.html#allrgb "Documentation of allrgb video source")
+
+<blockquote>
+
+<img id="lavfi_allrgb_halfed.png" height="300" src="./example/lavfi_allrgb_halfed.png" alt="lavfi_allrgb_halfed.png" title="ffmpeg -v level+warning -stats -f lavfi -i allrgb,scale=iw/2:-1 -frames 1 lavfi_allrgb_halfed.png">
+
+_scaled down to half size (bicubic) to reduce file size_
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i allrgb,scale=iw/2:-1 -frames 1 lavfi_allrgb_halfed.png
+```
+
+- [`scale` filter documentation](https://ffmpeg.org/ffmpeg-all.html#scale "Documentation of `scale` filter")
+  - [`flags` option (scaler options: `sws_flags`) scaling algorithm](https://ffmpeg.org/ffmpeg-all.html#sws_005fflags "Documentation of `sws_flags` scaling algorithms (`scale` filter uses these for its `flags` option)")
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### allyuv (input)
+
+default: `r=25` (fps), and `d=-1` (infinite duration)
+
+> [!IMPORTANT]
+>
+> fixed size of `4096x4096` (use `scale` filter to change size)
+
+```shell
+# all yuv colors (static 4096x4096 frames)
+ffmpeg -v level+warning -stats -f lavfi -i allyuv OUTPUT.mp4
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-f` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Df%20fmt%20(input/output) "Documentation of `-f fmt (input/output)`")
+- [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
+- [`allyuv` video source](https://ffmpeg.org/ffmpeg-all.html#allyuv "Documentation of allyuv video source")
+
+<blockquote>
+
+<img id="lavfi_allyuv_halfed.png" height="300" src="./example/lavfi_allyuv_halfed.png" alt="lavfi_allyuv_halfed.png" title="ffmpeg -v level+warning -stats -f lavfi -i allyuv,scale=iw/2:-1 -frames 1 lavfi_allyuv_halfed.png">
+
+_scaled down to half size (bicubic) to reduce file size_
+
+```shell
+ffmpeg -v level+warning -stats -f lavfi -i allyuv,scale=iw/2:-1 -frames 1 lavfi_allyuv_halfed.png
+```
+
+- [`scale` filter documentation](https://ffmpeg.org/ffmpeg-all.html#scale "Documentation of `scale` filter")
+  - [`flags` option (scaler options: `sws_flags`) scaling algorithm](https://ffmpeg.org/ffmpeg-all.html#sws_005fflags "Documentation of `sws_flags` scaling algorithms (`scale` filter uses these for its `flags` option)")
+
+</blockquote>
+
+Scroll [UP](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to beginning of Libavfilter virtual input device (lavfi filtergraph) section")
     | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
