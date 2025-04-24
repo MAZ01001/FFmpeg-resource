@@ -88,7 +88,7 @@ Scroll [UP](#ffplay-video-viewing "Scroll to beginning of FFplay section")
 
 ```shell
 # random simulation, window size 1280*960 (4 times 320*240, which is the default size)
-ffplay -v level+warning -stats -f lavfi life=mold=25:life_color=\#00ff00:death_color=\#aa0000,scale=4*iw:-1:flags=neighbor:eval=init
+ffplay -v level+warning -stats -f lavfi life=mold=25:life_color=\#00ff00:death_color=\#aa0000,scale=4*iw:-1:flags=neighbor
 ```
 
 A window will show the simulation infinitly (see [FFplay video controls](#ffplay-video-controls "Scroll to this section"))
@@ -859,9 +859,14 @@ ffmpeg -v level+warning -stats -f lavfi -i life=mold=25:life_color=\#00ff00:deat
 
 <https://github.com/user-attachments/assets/975fdfea-8dfb-42e1-8280-663830965290>
 
+_smaller initial size and scaled up 4x (nearest neighbor) to reduce file size_
+
 ```shell
 ffmpeg -v level+warning -stats -f lavfi -i life=mold=25:life_color=\#00ff00:death_color=\#aa0000:seed=3:s=200x200,scale=4*iw:-1:flags=neighbor -t 124 lavfi_life_3_200x200_scaled.mp4
 ```
+
+- [`scale` filter documentation](https://ffmpeg.org/ffmpeg-all.html#scale "Documentation of `scale` filter")
+  - [`flags` option (scaler options: `sws_flags`) scaling algorithm](https://ffmpeg.org/ffmpeg-all.html#sws_005fflags "Documentation of `sws_flags` scaling algorithms (`scale` filter uses these for its `flags` option)")
 
 </blockquote>
 
