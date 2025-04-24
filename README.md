@@ -734,9 +734,9 @@ ffmpeg -v level+warning -stats -f lavfi -i sierpinski=type=triangle OUTPUT.mp4
 - [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
 - [`sierpinski` video source](https://ffmpeg.org/ffmpeg-all.html#sierpinski "Documentation of sierpinski video source")
 
-<blockquote>
+<blockquote id="lavfi_sierpinski.mp4">
 
-<video id="lavfi_sierpinski.mp4" controls loop autoplay muted height="300" src="./example/lavfi_sierpinski.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i sierpinski -t 60 lavfi_sierpinski.mp4">lavfi_sierpinski.mp4</video>
+<https://github.com/user-attachments/assets/f9e57cfa-cc97-4752-a7ab-0c36d0ac59e6>
 
 ```shell
 ffmpeg -v level+warning -stats -f lavfi -i sierpinski -t 60 lavfi_sierpinski.mp4
@@ -744,9 +744,9 @@ ffmpeg -v level+warning -stats -f lavfi -i sierpinski -t 60 lavfi_sierpinski.mp4
 
 </blockquote>
 
-<blockquote>
+<blockquote id="lavfi_sierpinski_triangle.mp4">
 
-<video id="lavfi_sierpinski_triangle.mp4" controls loop autoplay muted height="300" src="./example/lavfi_sierpinski_triangle.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i sierpinski=type=triangle -t 60 lavfi_sierpinski_triangle.mp4">lavfi_sierpinski_triangle.mp4</video>
+<https://github.com/user-attachments/assets/0de5b690-902b-423c-8a7b-1ca714e5e2d4>
 
 ```shell
 ffmpeg -v level+warning -stats -f lavfi -i sierpinski=type=triangle -t 60 lavfi_sierpinski_triangle.mp4
@@ -779,9 +779,9 @@ ffmpeg -v level+warning -stats -f lavfi -i mandelbrot=inner=black -t 60 OUTPUT.m
 - [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
 - [`mandelbrot` video source](https://ffmpeg.org/ffmpeg-all.html#mandelbrot "Documentation of mandelbrot video source")
 
-<blockquote>
+<blockquote id="lavfi_mandelbrot_black_blur.mp4">
 
-<video id="lavfi_mandelbrot_black_blur.mp4" controls loop autoplay muted height="300" src="./example/lavfi_mandelbrot_black_blur.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i mandelbrot=inner=black:s=300x300:end_pts=75,avgblur=1 -t 43 lavfi_mandelbrot_black_blur.mp4">lavfi_mandelbrot_black_blur.mp4</video>
+<https://github.com/user-attachments/assets/c40b7849-0a16-4d8e-a296-f70452a0ede8>
 
 _speed up and blured to decrease file size_
 
@@ -819,9 +819,9 @@ ffmpeg -v level+warning -stats -f lavfi -i cellauto=full=0 -t 60 OUTPUT.mp4
 - [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
 - [`cellauto` video source](https://ffmpeg.org/ffmpeg-all.html#cellauto "Documentation of cellauto video source")
 
-<blockquote>
+<blockquote id="lavfi_cellauto_3.mp4">
 
-<video id="lavfi_cellauto_3.mp4" controls loop autoplay muted height="300" src="./example/lavfi_cellauto_3.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i cellauto=full=0:seed=3 -t 60 lavfi_cellauto_3.mp4">lavfi_cellauto_3.mp4</video>
+<https://github.com/user-attachments/assets/a6d266bc-0375-423d-9b4c-22058f6c22c4>
 
 ```shell
 ffmpeg -v level+warning -stats -f lavfi -i cellauto=full=0:seed=3 -t 60 lavfi_cellauto_3.mp4
@@ -855,9 +855,9 @@ ffmpeg -v level+warning -stats -f lavfi -i life=mold=25:life_color=\#00ff00:deat
 - [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
 - [`life` video source](https://ffmpeg.org/ffmpeg-all.html#life "Documentation of life video source")
 
-<blockquote>
+<blockquote id="lavfi_life_3_200x200_scaled.mp4">
 
-<video id="lavfi_life_3_200x200_scaled.mp4" controls loop autoplay muted height="300" src="./example/lavfi_life_3_200x200_scaled.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i life=mold=25:life_color=\#00ff00:death_color=\#aa0000:seed=3:s=200x200,scale=4*iw:-1:flags=neighbor -t 124 lavfi_life_3_200x200_scaled.mp4">lavfi_life_3_200x200_scaled.mp4</video>
+<https://github.com/user-attachments/assets/975fdfea-8dfb-42e1-8280-663830965290>
 
 ```shell
 ffmpeg -v level+warning -stats -f lavfi -i life=mold=25:life_color=\#00ff00:death_color=\#aa0000:seed=3:s=200x200,scale=4*iw:-1:flags=neighbor -t 124 lavfi_life_3_200x200_scaled.mp4
@@ -887,9 +887,9 @@ ffmpeg -v level+warning -stats -f lavfi -i mptestsrc=m=3*25:d=60 OUTPUT.mp4
 - [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
 - [`mptestsrc` video source](https://ffmpeg.org/ffmpeg-all.html#mptestsrc "Documentation of mptestsrc video source")
 
-<blockquote>
+<blockquote id="lavfi_mptestsrc_all_3s.mp4">
 
-<video id="lavfi_mptestsrc_all_3s.mp4" controls loop autoplay muted height="300" src="./example/lavfi_mptestsrc_all_3s.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i mptestsrc=m=3*25:d=60 lavfi_mptestsrc_all_3s.mp4">lavfi_mptestsrc_all_3s.mp4</video>
+<https://github.com/user-attachments/assets/3e6a4398-9321-4416-a7dc-a51e19e0a53e>
 
 ```shell
 ffmpeg -v level+warning -stats -f lavfi -i mptestsrc=m=3*25:d=60 lavfi_mptestsrc_all_3s.mp4
@@ -1010,9 +1010,9 @@ ffmpeg -v level+warning -stats -f lavfi -i testsrc OUTPUT.mp4
 - [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
 - [`testsrc` video source](https://ffmpeg.org/ffmpeg-all.html#testsrc "Documentation of testsrc video source")
 
-<blockquote>
+<blockquote id="lavfi_testsrc_n3.mp4">
 
-<video id="lavfi_testsrc_n3.mp4" controls loop autoplay muted height="300" src="./example/lavfi_testsrc_n3.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i testsrc=n=3:d=60 lavfi_testsrc_n3.mp4">lavfi_testsrc_n3.mp4</video>
+<https://github.com/user-attachments/assets/4c9d23d4-72b5-46f8-bd80-8d01d5da380e>
 
 ```shell
 ffmpeg -v level+warning -stats -f lavfi -i testsrc=n=3:d=60 lavfi_testsrc_n3.mp4
@@ -1040,9 +1040,9 @@ ffmpeg -v level+warning -stats -f lavfi -i testsrc2 OUTPUT.mp4
 - [`lavfi` virtual input device](https://ffmpeg.org/ffmpeg-all.html#lavfi "Documentation of lavfi virtual input device")
 - [`testsrc2` video source](https://ffmpeg.org/ffmpeg-all.html#testsrc2 "Documentation of testsrc2 video source")
 
-<blockquote>
+<blockquote id="lavfi_testsrc2.mp4">
 
-<video id="lavfi_testsrc2.mp4" controls loop autoplay muted height="300" src="./example/lavfi_testsrc2.mp4" title="ffmpeg -v level+warning -stats -f lavfi -i testsrc2=d=60 lavfi_testsrc2.mp4">lavfi_testsrc2.mp4</video>
+<https://github.com/user-attachments/assets/be58cd1d-ec31-4e95-9823-21af5b1a8490>
 
 ```shell
 ffmpeg -v level+warning -stats -f lavfi -i testsrc2=d=60 lavfi_testsrc2.mp4
