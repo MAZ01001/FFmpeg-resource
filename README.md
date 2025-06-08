@@ -1,31 +1,18 @@
 # Some useful [FFmpeg](https://ffmpeg.org/ "Official FFmpeg website") commands
 
-- Full FFmpeg documentation @ <https://ffmpeg.org/ffmpeg-all.html> ([archive](https://web.archive.org/web/*/https://ffmpeg.org/ffmpeg-all.html "waybackmachine (overview)"))
-- Full FFplay documentation @ <https://ffmpeg.org/ffplay-all.html> ([archive](https://web.archive.org/web/*/https://ffmpeg.org/ffplay-all.html "waybackmachine (overview)"))
-- Full FFprobe documentation @ <https://ffmpeg.org/ffprobe-all.html> ([archive](https://web.archive.org/web/*/https://ffmpeg.org/ffprobe-all.html "waybackmachine (overview)"))
-
-Get FFmpeg from <https://ffmpeg.org/download.html>.
-
-I currently use the FFmpeg builds from <https://www.gyan.dev/ffmpeg/builds/> (for Windows 7+)
-under the __release builds__ section the file `ffmpeg-release-full.7z`
-or directly <https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z>
-
-To check your version use
-
-```shell
-ffmpeg -version
-```
-
-> [!NOTE]
->
-> The order of (_some_) parameters/flags matters - before or after a given input or output (_FFmpeg supports multiple input files and [creating multiple output streams with one command](https://trac.ffmpeg.org/wiki/Creating%20multiple%20outputs "FFmpeg guide: Creating Multiple Outputs")_).
-
+- [FFmpeg intro](#ffmpeg-intro "Scroll to this section")
+  - [official documentation](#official-documentation "Scroll to this section")
+  - [download FFmpeg](#download-ffmpeg "Scroll to this section")
+  - [check configuration](#check-configuration "Scroll to this section")
+    - [help/licence/version](#helplicenceversion "Scroll to this section")
+    - [available/supported features](#availablesupported-features "Scroll to this section")
+    - [restrict logging level](#restrict-logging-level "Scroll to this section")
+  - [CLI controls](#cli-controls "Scroll to this section")
 - [FFplay video viewing](#ffplay-video-viewing "Scroll to this section")
   - [Watch a video (looping)](#watch-a-video-looping "Scroll to this section")
   - [Simulate Conway's game of life](#simulate-conways-game-of-life "Scroll to this section")
   - [FFplay video controls](#ffplay-video-controls "Scroll to this section")
 - [FFmpeg video editing](#ffmpeg-video-editing "Scroll to this section")
-  - [Only output warnings and stats when running a command](#only-output-warnings-and-stats-when-running-a-command "Scroll to this section")
   - [Convert MKV to MP4](#convert-mkv-to-mp4 "Scroll to this section")
   - [Convert MP4 to M4A (audio only mp4)](#convert-mp4-to-m4a-audio-only-mp4 "Scroll to this section")
   - [Edit metadata (add chapters)](#edit-metadata-add-chapters "Scroll to this section")
@@ -60,6 +47,118 @@ ffmpeg -version
   - [colorchart (input)](#colorchart-input "Scroll to this section")
   - [allrgb (input)](#allrgb-input "Scroll to this section")
   - [allyuv (input)](#allyuv-input "Scroll to this section")
+
+> [!IMPORTANT]
+>
+> The order of (_some_) parameters/flags matters - before or after a given input or output (_FFmpeg supports multiple input files and [creating multiple output streams with one command](https://trac.ffmpeg.org/wiki/Creating%20multiple%20outputs "FFmpeg guide: Creating Multiple Outputs")_).
+
+## FFmpeg intro
+
+- [official documentation](#official-documentation "Scroll to this section")
+- [download FFmpeg](#download-ffmpeg "Scroll to this section")
+- [check configuration](#check-configuration "Scroll to this section")
+  - [help/licence/version](#helplicenceversion "Scroll to this section")
+  - [available/supported features](#availablesupported-features "Scroll to this section")
+  - [restrict logging level](#restrict-logging-level "Scroll to this section")
+- [CLI controls](#cli-controls "Scroll to this section")
+
+Scroll [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### official documentation
+
+- Full FFmpeg documentation @ <https://ffmpeg.org/ffmpeg-all.html> ([archive](https://web.archive.org/web/*/https://ffmpeg.org/ffmpeg-all.html "waybackmachine (overview)"))
+- Full FFplay documentation @ <https://ffmpeg.org/ffplay-all.html> ([archive](https://web.archive.org/web/*/https://ffmpeg.org/ffplay-all.html "waybackmachine (overview)"))
+- Full FFprobe documentation @ <https://ffmpeg.org/ffprobe-all.html> ([archive](https://web.archive.org/web/*/https://ffmpeg.org/ffprobe-all.html "waybackmachine (overview)"))
+
+Scroll [UP](#ffmpeg-intro "Scroll to beginning of FFmpeg intro section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### download FFmpeg
+
+Get FFmpeg from <https://ffmpeg.org/download.html>
+
+I currently use the FFmpeg builds from <https://www.gyan.dev/ffmpeg/builds/> (for Windows 7+)
+under the __release builds__ section the file `ffmpeg-release-full.7z`
+or directly <https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z>
+
+Scroll [UP](#ffmpeg-intro "Scroll to beginning of FFmpeg intro section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### check configuration
+
+- [help/licence/version](#helplicenceversion "Scroll to this section")
+- [available/supported features](#availablesupported-features "Scroll to this section")
+- [restrict logging level](#restrict-logging-level "Scroll to this section")
+
+> see [Generic options](https://ffmpeg.org/ffmpeg-all.html#Generic-options "FFmpeg documentation: Generic options")
+
+Scroll [UP](#ffmpeg-intro "Scroll to beginning of FFmpeg intro section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+#### help/licence/version
+
+```shell
+ffmpeg -h       # CLI help
+ffmpeg -L       # FFmpeg licence
+ffmpeg -version # FFmpeg build version
+```
+
+Scroll [UP](#check-configuration "Scroll to beginning of check configuration section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+#### available/supported features
+
+```shell
+ffmpeg -buildconf    # FFmpeg build configuration
+ffmpeg -formats      # files (and devices) de-/muxing support
+ffmpeg -pix_fmts     # pixel formats (in/out/hardware acceleration/palette/bitstream)
+ffmpeg -protocols    # protocols (in/out) like: file, https, sftp
+ffmpeg -codecs       # video/audio/subtitle/data en-/decoders (also shows if lossy or lossless)
+ffmpeg -filters      # video/audio (libavfilter) filters like: avgblur V->V (video in; video out)
+ffmpeg -bsfs         # bitstream filters like: null, h264_metadata, hevc_metadata
+ffmpeg -dispositions # how a stream is added to an output file; for example attached_pic is the file thumbnail/cover art for video files like MP4 (visible in file explorer)
+ffmpeg -colors       # color names with their hex value; for example: Lime #00ff00
+```
+
+Scroll [UP](#check-configuration "Scroll to beginning of check configuration section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+#### restrict logging level
+
+```shell
+ffmpeg -hide_banner     # does not log version/copyright/buildconfig
+ffmpeg -v level+warning # only log warnings and worse and shows level: "[warning] ..."
+                        # debug > verbose > info (default) > warning > error > fatal > quiet (nothing)
+                        # banner is info so -hide_banner is not needed with warning or less
+ffmpeg -stats           # allways show stats (en-/decoding progress), even when log level is less than info
+```
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+
+Scroll [UP](#check-configuration "Scroll to beginning of check configuration section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### CLI controls
+
+CLI keyboard hotkeys mid-process:
+
+| key          | function                                             |
+| ------------ | ---------------------------------------------------- |
+| <kbd>?</kbd> | show this table                                      |
+| <kbd>+</kbd> | increase verbosity (logging level)                   |
+| <kbd>-</kbd> | decrease verbosity (logging level)                   |
+| <kbd>q</kbd> | quit                                                 |
+| <kbd>c</kbd> | Send command to first matching filter supporting it  |
+| <kbd>C</kbd> | Send/Queue command to all matching filters           |
+| <kbd>D</kbd> | cycle through available debug modes                  |
+| <kbd>h</kbd> | dump packets/hex press to cycle through the 3 states |
+| <kbd>s</kbd> | Show QP histogram                                    |
+
+_I didn't find an official documentation for these..._
+
+Scroll [UP](#ffmpeg-intro "Scroll to beginning of FFmpeg intro section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
 
 ## FFplay video viewing
 
@@ -130,7 +229,6 @@ Scroll [UP](#ffplay-video-viewing "Scroll to beginning of FFplay section")
 
 ## FFmpeg video editing
 
-- [Only output warnings and stats when running a command](#only-output-warnings-and-stats-when-running-a-command "Scroll to this section")
 - [Convert MKV to MP4](#convert-mkv-to-mp4 "Scroll to this section")
 - [Convert MP4 to M4A (audio only mp4)](#convert-mp4-to-m4a-audio-only-mp4 "Scroll to this section")
 - [Edit metadata (add chapters)](#edit-metadata-add-chapters "Scroll to this section")
@@ -149,18 +247,6 @@ Scroll [UP](#ffplay-video-viewing "Scroll to beginning of FFplay section")
 - [find silence parts in video](#find-silence-parts-in-video "Scroll to this section")
 
 Scroll [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
-
-### Only output warnings and stats when running a command
-
-```shell
-ffmpeg -v level+warning -stats # [...]
-```
-
-- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
-- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
-
-Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
-    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
 
 ### Convert MKV to MP4
 
