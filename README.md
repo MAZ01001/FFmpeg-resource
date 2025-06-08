@@ -449,6 +449,7 @@ ffmpeg -v level+warning -stats -hwaccel cuda -hwaccel_output_format cuda -i INPU
   - [Stream specifiers documentation](https://ffmpeg.org/ffmpeg-all.html#Stream-specifiers "Documentation of stream specifiers for `-c`")
 - [`-crf` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=crf,-Set%20the%20quality/size%20tradeoff%20for%20constant%2Dquality "Documentation of `-crf`") (the best description is under libaom-AV1 but it's also in other encoders like MPEG-4)
 - also see [this FFmpeg guide](https://trac.ffmpeg.org/wiki/Encode/H.264#crf "H.264 Video Encoding Guide") for CRF with `libx264`
+- and ["this FFmpeg guide"](https://trac.ffmpeg.org/wiki/HWAccelIntro#CUDANVENCNVDEC "CUDA (NVENC/NVDEC) section of Hardware Acceleration Intro") for hardware acceleration with differend OS/hardware (specifically section _CUDA (NVENC/NVDEC)_)
 - and ["Using FFmpeg with NVIDIA GPU Hardware Acceleration"](https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/ "NVIDIA Documentation Hub: Using FFmpeg with NVIDIA GPU Hardware Acceleration") on the NVIDIA Documentation Hub
 - CUDA ignores [`-crf`](https://ffmpeg.org/ffmpeg-all.html#:~:text=crf,-Set%20the%20quality/size%20tradeoff%20for%20constant%2Dquality "Documentation of `-crf`") (the best description is under libaom-AV1 but it's also in other encoders like MPEG-4) so it's `-qp` for the hardware acceleration
 
@@ -650,6 +651,8 @@ concat=n=4:v=1:a=1
 - [`-c` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dc%5B%3Astream_specifier%5D%20codec%20(input/output%2Cper%2Dstream) "Documentation of `-c[:stream_specifier] codec (input/output,per-stream)`")
   - [Stream specifiers documentation](https://ffmpeg.org/ffmpeg-all.html#Stream-specifiers "Documentation of stream specifiers for `-c`")
 - also, see the section about [video compression](#compress-video "Scroll to the video compression section on this page") specifically with GPU hardware acceleration / NVIDIA CUDA
+  - ["this FFmpeg guide"](https://trac.ffmpeg.org/wiki/HWAccelIntro#CUDANVENCNVDEC "CUDA (NVENC/NVDEC) section of Hardware Acceleration Intro") for hardware acceleration with differend OS/hardware (specifically section _CUDA (NVENC/NVDEC)_)
+  - and ["Using FFmpeg with NVIDIA GPU Hardware Acceleration"](https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/ "NVIDIA Documentation Hub: Using FFmpeg with NVIDIA GPU Hardware Acceleration") on the NVIDIA Documentation Hub
 
 Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
     | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
