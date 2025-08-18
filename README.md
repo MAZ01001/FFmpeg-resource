@@ -8,6 +8,8 @@
     - [available/supported features](#availablesupported-features "Scroll to this section")
     - [restrict logging level](#restrict-logging-level "Scroll to this section")
   - [CLI controls](#cli-controls "Scroll to this section")
+- [FFprobe file info](#ffprobe-file-info "Scroll to this section")
+  - [Show/get stream metadata](#showget-stream-metadata "Scroll to this section")
 - [FFplay video viewing](#ffplay-video-viewing "Scroll to this section")
   - [Watch a video (looping)](#watch-a-video-looping "Scroll to this section")
   - [Simulate Conway's game of life](#simulate-conways-game-of-life "Scroll to this section")
@@ -158,6 +160,172 @@ CLI keyboard hotkeys mid-process:
 _I didn't find an official documentation for these..._
 
 Scroll [UP](#ffmpeg-intro "Scroll to beginning of FFmpeg intro section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+## FFprobe file info
+
+- [Show/get stream metadata](#showget-stream-metadata "Scroll to this section")
+
+Scroll [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
+### Show/get stream metadata
+
+_Output of the following commands is going to stdout (standard output), if no `-o OUTPUT.log` is specified_
+
+```shell
+# list all audio streams and their language-tag (if set) in compact format (seperator ":", no field-names, and ommit section name)
+ffprobe -v level+warning -i INPUT.mp4 -show_entries stream=index:stream_tags=language -select_streams a -of compact=s=\::nk=1:p=0
+# [stream_index]:[tag_language]
+# 1:eng
+```
+
+> [!NOTE]
+>
+> FFprobe uses 3 letter [__ISO 639-2__](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes#iso-codes "Wikipedia: List of ISO 639-2 codes") language codes
+
+---
+
+```shell
+# list all streams with index, codec_name, codec_type, and language-tag (if set) in compact format (seperator ":", no field-names, and ommit section name)
+ffprobe -v level+warning -i INPUT.mp4 -show_entries stream=index,codec_type,codec_name:stream_tags=language -of compact=s=\::nk=1:p=0
+# [stream_index]:[codec_name]:[codec_type]:[tag_language]
+# 0:h264:video:und  (undetermined)
+# 1:aac:audio:eng
+# 2:png:video       (DISPOSITION:attached_pic ie the file-thumbnail)
+```
+
+> see how to [Add thumbnail](#add-thumbnail "Scroll to this section")
+
+---
+
+```shell
+# show all chapters (if any) of this file with id, start_time, end_time, and title (time in seconds) in compact format (seperator ":", no field-names, and ommit section name)
+ffprobe -v level+warning -i INPUT.mp4 -show_entries chapter=id,start_time,end_time:chapter_tags=title -of compact=s=\::nk=1:p=0
+# [chapter_id]:[start_time]:[end_time]:[chapter_title]
+# 0:0.000000:10.000000:First 10 seconds
+# 1:60.000000:120.000000:Second minute
+```
+
+> see how to [Edit metadata (add chapters)](#edit-metadata-add-chapters "Scroll to this section")
+
+---
+
+```shell
+# most relevant metadata in JSON format (secify output file instead of stdout)
+ffprobe -v level+warning -i INPUT.mp4 -o OUTPUT.json -show_entries stream=index,codec_type,codec_name,width,height,display_aspect_ratio,avg_frame_rate,start_time,duration,bit_rate,sample_rate,channels,channel_layout:stream_tags=language,title:stream_disposition:chapter=id,start_time,end_time:chapter_tags=title:format=filename,duration,size,bit_rate:format_tags=title,artist,date,comment -of json
+# see JSON structure with type info and some extra notes below
+```
+
+<details><summary>Click to show <code>-show_entries</code> value with added whitespace for readability</summary>
+
+```text
+stream        = index, codec_type, codec_name, width, height, display_aspect_ratio, avg_frame_rate,
+                start_time, duration, bit_rate, sample_rate, channels, channel_layout:
+stream_tags   = language , title:
+stream_disposition:
+chapter       = id, start_time, end_time:
+chapter_tags  = title:
+format        = filename,duration, size, bit_rate:
+format_tags   = title, artist, date, comment
+```
+
+</details>
+
+<details><summary>Click to show JSON format/type info (only for above command)</summary>
+
+_Not a general list of keys, just those that are output by the above command_
+
+```typescript
+type FFprobeJSON = {
+  programs: never[];              // (all via -show_programs)
+  stream_groups: never[];         // (all via -show_stream_groups)
+  streams: {                      // (all via -show_streams)
+    index: number;
+    codec_name: string;           // "h264"/"png"/"aac"/...
+    codec_type: string;           // "video"/"audio"/...
+    width: number;
+    height: number;
+    display_aspect_ratio: string; // usually "16:9"
+    avg_frame_rate: string;
+    start_time: string;           // time in seconds
+    duration: string;             // time in seconds
+    bit_rate: string;
+    disposition: {                // only one should be 1 (if any)
+      default: 0|1;
+      dub: 0|1;
+      original: 0|1;
+      comment: 0|1;
+      lyrics: 0|1;
+      karaoke: 0|1;
+      forced: 0|1;
+      hearing_impaired: 0|1;
+      visual_impaired: 0|1;
+      clean_effects: 0|1;
+      attached_pic: 0|1;          // for cover-images/file-thubnails
+      timed_thumbnails: 0|1;
+      non_diegetic: 0|1;
+      captions: 0|1;
+      descriptions: 0|1;
+      metadata: 0|1;
+      dependent: 0|1;
+      still_image: 0|1;
+      multilayer: 0|1;
+    };
+    tags: {
+      language: string;           // 3 letter (ISO 639-2) language tag
+      title: string;
+    };
+    sample_rate: string;
+    channels: number;             // usually 2 for audio streams (left right)
+    channel_layout: string;       // usually stereo for audio streams
+  }[];
+  chapters: {                     // (all via -show_chapters)
+    id: number;
+    start_time: string;           // time in seconds
+    end_time: string;             // time in seconds
+    tags: {
+      title: string;              // name of chapter
+    };
+  }[];
+  format: {                       // (all via -show_format)
+    filename: string;             // exact path/URL given to FFprobe
+    duration: string;             // entire file duration in seconds
+    size: string;                 // file size in bytes
+    bit_rate: string;
+    tags: {
+      title: string;
+      artist: string;
+      date: string;
+      comment: string;
+    };
+  };
+};
+```
+
+</details>
+
+---
+
+Also, custom [metadata](https://ffmpeg.org/ffprobe-all.html#Metadata "Documentation of general Metadata info") added via [`-metadata field=value`](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dmetadata%5B%3Ametadata_specifier%5D%20key%3Dvalue%20(output%2Cper%2Dmetadata) "FFmpeg documentation of `-metadata[:metadata_specifier] key=value (output,per-metadata)`")
+can be read with `-show_entries format_tags=field` (then `{}.format.tags.field` (string) in JSON) or within `-show_format` as `TAG:field=value` (if no output format was specified; value may span multiple lines)
+
+_Keep in mind that whitespace will not be ignored, so `-metadata "field = data"` has key "field " and value " data"_
+
+- [`-v` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-i` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Di%20input_url "Documentation of `-i input_url`")
+- [`-o` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Do%20output_url "Documentation of `-o output_url`")
+- [`-show_entries` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Dshow_entries%20section_entries "Documentation of `-show_entries section_entries`")
+- [`-select_streams` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Dselect_streams%20stream_specifier "Documentation of `-select_streams stream_specifier`")
+- [`-of` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Doutput_format%2C%20%2Dof%2C%20%2Dprint_format%20writer_name%5B%3Dwriter_options%5D "Documentation of `-output_format, -of, -print_format writer_name[=writer_options]`")
+  - [`compact` documentation](https://ffmpeg.org/ffprobe-all.html#compact_002c-csv "Documentation of `compact, csv`")
+  - [`json` documentation](https://ffmpeg.org/ffprobe-all.html#json "Documentation of `json`")
+- [`-show_programs` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Dshow_programs "Documentation of `-show_programs`")
+- [`-show_stream_groups` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Dshow_stream_groups "Documentation of `-show_stream_groups`")
+- [`-show_streams` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Dshow_streams,-Show "Documentation of `-show_streams`")
+- [`-show_chapters` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Dshow_chapters "Documentation of `-show_chapters`")
+- [`-show_format` documentation](https://ffmpeg.org/ffprobe-all.html#:~:text=%2Dshow_format "Documentation of `-show_format`")
+
+Scroll [UP](#ffprobe-file-info "Scroll to beginning of FFprobe section")
     | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
 
 ## FFplay video viewing
