@@ -191,7 +191,7 @@ ffprobe -v level+warning -i INPUT.mp4 -show_entries stream=index,codec_type,code
 # [stream_index]:[codec_name]:[codec_type]:[tag_language]
 # 0:h264:video:und  (undetermined)
 # 1:aac:audio:eng
-# 2:png:video       (DISPOSITION:attached_pic ie the file-thumbnail)
+# 2:png:video       (DISPOSITION:attached_pic ie the file thumbnail)
 ```
 
 > see how to [Add thumbnail](#add-thumbnail "Scroll to this section")
@@ -629,7 +629,7 @@ The format `frame%03d.png` means files will be named: `frame001.png`, `frame002.
 - [`-t` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dt%20duration%20(input/output) "Documentation of `-t duration (input/output)`")
 - [`-to` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dto%20position%20(input/output) "Documentation of `-to position (input/output)`")
 
-`-ss`, `-t`, and `-to` expect a specific [time format](https://ffmpeg.org/ffmpeg-utils.html#time-duration-syntax "Documentation for time duration format")
+`-ss`, `-t`, and `-to` expect a specific [time format](https://ffmpeg.org/ffmpeg-all.html#Time-duration "Documentation for time duration format")
 in short `[-][HH:]MM:SS[.m...]` or `[-]S+[.m...][s|ms|us]`
 
 Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
@@ -670,7 +670,7 @@ ffmpeg -v level+warning -stats -i INPUT.mp4 -vf crop=WIDTH:HEIGHT:POSX:POSY OUTP
 
 - [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
 - [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
-- [full crop filter documentation](https://ffmpeg.org/ffmpeg-filters.html#crop "Documentation for the crop filter")
+- [full crop filter documentation](https://ffmpeg.org/ffmpeg-all.html#crop "Documentation for the crop filter")
 
 Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
     | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
@@ -690,7 +690,7 @@ ffmpeg -v level+warning -stats -i INPUT.mp4 -c copy -c:v libx265 -crf 25 OUTPUT.
 faster with GPU hardware acceleration / NVIDIA CUDA
 
 ```shell
-# for h.265 → h264_nvenc with NVIDIA CUDA
+# for h.264 → h264_nvenc with NVIDIA CUDA
 ffmpeg -v level+warning -stats -hwaccel cuda -hwaccel_output_format cuda -i INPUT.mp4 -c copy -c:v h264_nvenc -fps_mode passthrough -b_ref_mode disabled -preset medium -tune hq -rc vbr -multipass disabled -qp 20 OUTPUT.mp4
 
 # for h.265 → hevc_nvenc with NVIDIA CUDA
