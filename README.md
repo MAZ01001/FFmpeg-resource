@@ -23,12 +23,13 @@
   - [Extract frames](#extract-frames "Scroll to this section")
   - [Create video from frames](#create-video-from-frames "Scroll to this section")
   - [crop video](#crop-video "Scroll to this section")
+  - [scale video](#scale-video "Scroll to this section")
   - [compress video](#compress-video "Scroll to this section")
   - [cut video](#cut-video "Scroll to this section")
   - [loop video](#loop-video "Scroll to this section")
   - [Reverse video and/or Audio](#reverse-video-andor-audio "Scroll to this section")
   - [Concatenate multiple videos into one](#concatenate-multiple-videos-into-one "Scroll to this section")
-  - [Cut and combine multiple sections of multiple files](#cut-and-combine-multiple-sections-of-multiple-files "Scroll to this section")
+    - [concat sections of videos](#concat-sections-of-videos "Scroll to this section")
   - [Create/download video with m3u8 playlist](#createdownload-video-with-m3u8-playlist "Scroll to this section")
   - [find silence parts in video](#find-silence-parts-in-video "Scroll to this section")
 - [Libavfilter virtual input device (lavfi filtergraph)](#libavfilter-virtual-input-device-lavfi-filtergraph "Scroll to this section")
@@ -405,12 +406,13 @@ Scroll [UP](#ffplay-video-viewing "Scroll to beginning of FFplay section")
 - [Extract frames](#extract-frames "Scroll to this section")
 - [Create video from frames](#create-video-from-frames "Scroll to this section")
 - [crop video](#crop-video "Scroll to this section")
+- [scale video](#scale-video "Scroll to this section")
 - [compress video](#compress-video "Scroll to this section")
 - [cut video](#cut-video "Scroll to this section")
 - [loop video](#loop-video "Scroll to this section")
 - [Reverse video and/or Audio](#reverse-video-andor-audio "Scroll to this section")
 - [Concatenate multiple videos into one](#concatenate-multiple-videos-into-one "Scroll to this section")
-- [Cut and combine multiple sections of multiple files](#cut-and-combine-multiple-sections-of-multiple-files "Scroll to this section")
+  - [concat sections of videos](#concat-sections-of-videos "Scroll to this section")
 - [Create/download video with m3u8 playlist](#createdownload-video-with-m3u8-playlist "Scroll to this section")
 - [find silence parts in video](#find-silence-parts-in-video "Scroll to this section")
 
@@ -675,6 +677,33 @@ ffmpeg -v level+warning -stats -i INPUT.mp4 -vf crop=WIDTH:HEIGHT:POSX:POSY OUTP
 Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
     | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
 
+### scale video
+
+```shell
+# scale to WIDTH*HEIGHT (stretches to new resolution)
+ffmpeg -v level+warning -stats -i INPUT.mp4 -vf "scale=WIDTH:HEIGHT" OUTPUT.mp4
+
+# preserve aspect ratio with letter-/pillarbox (black bars)
+ffmpeg -v level+warning -stats -i INPUT.mp4 -vf "scale=WIDTH:HEIGHT:force_original_aspect_ratio=decrease,pad=WIDTH:HEIGHT:POSX:POSY,setsar=1" OUTPUT.mp4
+```
+
+- `WIDTH` - the width of the desired output resolution
+- `HEIGHT` - the height of the desired output resolution
+- `POSX` - the X position of the video in the padding region (`-1` to auto center; default is `0`)
+- `POSY` - the Y position of the video in the padding region (`-1` to auto center; default is `0`)
+- all values are in pixels, but there is no "px" after it (or an expression that gets calculated each frame, like `(ow-iw)/2` for `POSX` to center horizontally)
+
+- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
+- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [simple filtergraphs documentation](https://ffmpeg.org/ffmpeg-all.html#Simple-filtergraphs "Documentation for simple filtergraphs (like `-filter:v`/`-vf`)")
+  - [scale filter documentation](https://ffmpeg.org/ffmpeg-all.html#scale-1 "Documentation for the scale filter")
+    - [scaler options](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options "Documentation for scaler options")
+  - [pad filter documentation](https://ffmpeg.org/ffmpeg-all.html#pad-1 "Documentation for the pad filter")
+  - [setsar filter documentation](https://ffmpeg.org/ffmpeg-all.html#setdar_002c-setsar "Documentation for the setsar filter")
+
+Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
+    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
+
 ### compress video
 
 lower values are better (higher bitrate), but also lead to larger file size
@@ -697,15 +726,59 @@ ffmpeg -v level+warning -stats -hwaccel cuda -hwaccel_output_format cuda -i INPU
 ffmpeg -v level+warning -stats -hwaccel cuda -hwaccel_output_format cuda -i INPUT.mp4 -c copy -c:v hevc_nvenc -fps_mode passthrough -b_ref_mode disabled -preset medium -tune hq -rc vbr -multipass disabled -qp 25 OUTPUT.mp4
 ```
 
+and even better by specifying the (output) bitrate manually
+
+```shell
+# for h.264 → h264_nvenc with NVIDIA CUDA
+# bitrate ~ 4M with limit 500k - 8M and buffer size 8M (should be larger than input video bitrate)
+# and QP 4 (high quality/less lossy compression)
+ffmpeg -v level+warning -stats -hwaccel cuda -hwaccel_output_format cuda -i INPUT.mp4 -c copy -c:v h264_nvenc -preset p7 -tune hq -profile:v high -level:v auto -rc vbr -b:v 4M -minrate:v 500k -maxrate:v 8M -bufsize:v 8M -multipass disabled -fps_mode passthrough -b_ref_mode:v disabled -rc-lookahead:v 32 -qp 4 OUTPUT.mp4
+```
+
+<details closed><summary>Click to show formatted codec arguments from last command above</summary>
+
+```text
+- c copy
+
+-c:v h264_nvenc
+-preset p7
+-tune hq
+-profile:v high
+-level:v auto
+
+-rc vbr
+
+-b:v 4M
+-minrate:v 500k
+-maxrate:v 8M
+-bufsize:v 8M
+
+-multipass disabled
+-fps_mode passthrough
+-b_ref_mode:v disabled
+-rc-lookahead:v 32
+
+-qp 4
+```
+
+</details>
+
+> [!NOTE]
+>
+> also, note that if there is an `attached_pic` (ie [file thumbnail](#add-thumbnail "Scroll to the section for how to add a file thumbnail on this page")), then the `:v` stream specifier will also include it and thus tries to encode with NVENC, which will give an error, so instead you'll need to specify further which video stream to encode
+>
+> by adding `-map 0` before the `-c copy` to copy over every stream (of first input) and disposition (thus also the `attached_pic`) and then `:v:0` to select the first video stream as the one to encode with NVENC
+
 - [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
 - [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
+- [`-map` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dmap%20%5B%2D%5Dinput_file_id%5B%3Astream_specifier%5D%5B%3F%5D%20%7C%20%5Blinklabel%5D%20(output) "Documentation of `-map [-]input_file_id[:stream_specifier][?] | [linklabel] (output)`")
 - [`-c` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dc%5B%3Astream_specifier%5D%20codec%20(input/output%2Cper%2Dstream) "Documentation of `-c[:stream_specifier] codec (input/output,per-stream)`")
   - [Stream specifiers documentation](https://ffmpeg.org/ffmpeg-all.html#Stream-specifiers "Documentation of stream specifiers for `-c`")
 - [`-crf` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=crf,-Set%20the%20quality/size%20tradeoff%20for%20constant%2Dquality "Documentation of `-crf`") (the best description is under libaom-AV1 but it's also in other encoders like MPEG-4)
-- also see [this FFmpeg guide](https://trac.ffmpeg.org/wiki/Encode/H.264#crf "H.264 Video Encoding Guide") for CRF with `libx264`
-- and ["this FFmpeg guide"](https://trac.ffmpeg.org/wiki/HWAccelIntro#CUDANVENCNVDEC "CUDA (NVENC/NVDEC) section of Hardware Acceleration Intro") for hardware acceleration with differend OS/hardware (specifically section _CUDA (NVENC/NVDEC)_)
-- and ["Using FFmpeg with NVIDIA GPU Hardware Acceleration"](https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/ "NVIDIA Documentation Hub: Using FFmpeg with NVIDIA GPU Hardware Acceleration") on the NVIDIA Documentation Hub
-- CUDA ignores [`-crf`](https://ffmpeg.org/ffmpeg-all.html#:~:text=crf,-Set%20the%20quality/size%20tradeoff%20for%20constant%2Dquality "Documentation of `-crf`") (the best description is under libaom-AV1 but it's also in other encoders like MPEG-4) so it's `-qp` for the hardware acceleration
+  - also see [this FFmpeg guide](https://trac.ffmpeg.org/wiki/Encode/H.264#crf "H.264 Video Encoding Guide") for CRF with `libx264`
+  - CUDA ignores [`-crf`](https://ffmpeg.org/ffmpeg-all.html#:~:text=crf,-Set%20the%20quality/size%20tradeoff%20for%20constant%2Dquality "Documentation of `-crf`") (the best description is under libaom-AV1 but it's also in other encoders like MPEG-4) so it's `-qp` for the hardware acceleration
+- also ["this FFmpeg guide"](https://trac.ffmpeg.org/wiki/HWAccelIntro#CUDANVENCNVDEC "CUDA (NVENC/NVDEC) section of Hardware Acceleration Intro") for hardware acceleration with differend OS/hardware (specifically section _CUDA (NVENC/NVDEC)_)
+  - and ["Using FFmpeg with NVIDIA GPU Hardware Acceleration"](https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/ "NVIDIA Documentation Hub: Using FFmpeg with NVIDIA GPU Hardware Acceleration") on the NVIDIA Documentation Hub
 
 Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
     | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
@@ -811,21 +884,14 @@ file 'INPUT_0.mp4'
 file 'INPUT_1.mp4'
 ```
 
-- [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
-- [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
-- [`-filter_complex` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dfilter_complex%20filtergraph%20(global) "Documentation of `-filter_complex filtergraph (global)`")
-  - can also be read from a file via `-filter_complex_script` with `path/to/file.txt`, although this is not mentioned in the official documentation.
-  - [concat multimedia filter](https://ffmpeg.org/ffmpeg-all.html#concat-3 "Documentation of concat filter (for `-filter_complex`)")
-- [`-map` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dmap%20%5B%2D%5Dinput_file_id%5B%3Astream_specifier%5D%5B%3F%5D%20%7C%20%5Blinklabel%5D%20(output) "Documentation of `-map [-]input_file_id[:stream_specifier][?] | [linklabel] (output)`")
-- [concat demuxer documentation](https://ffmpeg.org/ffmpeg-all.html#concat "Documentation of concat demuxer")
-- [`-safe` option for concat demuxer](https://ffmpeg.org/ffmpeg-all.html#:~:text=safe,-if%20set%20to%201%2C%20reject%20unsafe%20file%20paths%20and%20directives "Documentation of `-safe` option for the concat demuxer")
-- [`-c` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dc%5B%3Astream_specifier%5D%20codec%20(input/output%2Cper%2Dstream) "Documentation of `-c[:stream_specifier] codec (input/output,per-stream)`")
-  - [Stream specifiers documentation](https://ffmpeg.org/ffmpeg-all.html#Stream-specifiers "Documentation of stream specifiers for `-c`")
+> [!NOTE]
+>
+> all videos need to have the same resolution and fps for concat
+>
+> see [scale video](#scale-video) to scale all videos to the same resolution
+> and [`-fps_mode`](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dfps_mode%5B%3Astream_specifier%5D%20parameter%20(output%2Cper%2Dstream) "Documentation of `-fps_mode[:stream_specifier] parameter` (output,per-stream)") `vfr`/`passthrough` to allow for variable frame rate
 
-Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
-    | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
-
-### Cut and combine multiple sections of multiple files
+#### concat sections of videos
 
 Cut clips and concat them (with re-encoding) as follows (video and audio are cut and combined separately).
 
@@ -834,65 +900,96 @@ Cut clips and concat them (with re-encoding) as follows (video and audio are cut
 # 00:04 to 00:08 video and audio of INPUT_0.mp4
 # 00:01 to 00:05 video and audio of INPUT_1.mp4
 # 00:06 to 00:08 video and audio of INPUT_1.mp4
-ffmpeg -v level+warning -stats -i INPUT_0.mp4 -i INPUT_1.mp4 -filter_complex "[0:v]trim=0:2,setpts=PTS-STARTPTS[i0v0];[0:v]atrim=0:2,asetpts=PTS-STARTPTS[i0a0];[0:v]trim=4:8,setpts=PTS-STARTPTS[i0v1];[0:v]atrim=4:8,asetpts=PTS-STARTPTS[i0a1];[1:v]trim=1:5,setpts=PTS-STARTPTS[i1v0];[1:v]atrim=1:5,asetpts=PTS-STARTPTS[i1a0];[1:v]trim=6:8,setpts=PTS-STARTPTS[i1v1];[1:v]atrim=6:8,asetpts=PTS-STARTPTS[i1a1];[i0v0][i0a0][i0v1][i0a1][i1v0][i1a0][i1v1][i1a1]concat=n=4:v=1:a=1[cv][ca]" -map "[cv]" -map "[ca]" OUTPUT.mp4
+ffmpeg -v level+warning -stats -i INPUT_0.mp4 -i INPUT_1.mp4 -filter_complex "[0:v]trim=0:2,setpts=PTS-STARTPTS[i0v0];[0:a]atrim=0:2,asetpts=PTS-STARTPTS[i0a0];[0:v]trim=4:8,setpts=PTS-STARTPTS[i0v1];[0:a]atrim=4:8,asetpts=PTS-STARTPTS[i0a1];[1:v]trim=1:5,setpts=PTS-STARTPTS[i1v0];[1:a]atrim=1:5,asetpts=PTS-STARTPTS[i1a0];[1:v]trim=6:8,setpts=PTS-STARTPTS[i1v1];[1:a]atrim=6:8,asetpts=PTS-STARTPTS[i1a1];[i0v0][i0a0][i0v1][i0a1][i1v0][i1a0][i1v1][i1a1]concat=n=4:v=1:a=1[cv][ca]" -map "[cv]" -map "[ca]" OUTPUT.mp4
 
-# with (h.264) NVIDIA:CUDA and slow/low compression (4 to 8 MB variable bitrate and 4 QP) for the first video stream of the combined video clips
-ffmpeg -v level+warning -stats -hwaccel cuda -hwaccel_output_format cuda -i INPUT_0.mp4 -hwaccel cuda -hwaccel_output_format cuda -i INPUT_1.mp4 -filter_complex "[0:v]trim=0:2,setpts=PTS-STARTPTS[i0v0];[0:v]atrim=0:2,asetpts=PTS-STARTPTS[i0a0];[0:v]trim=4:8,setpts=PTS-STARTPTS[i0v1];[0:v]atrim=4:8,asetpts=PTS-STARTPTS[i0a1];[1:v]trim=1:5,setpts=PTS-STARTPTS[i1v0];[1:v]atrim=1:5,asetpts=PTS-STARTPTS[i1a0];[1:v]trim=6:8,setpts=PTS-STARTPTS[i1v1];[1:v]atrim=6:8,asetpts=PTS-STARTPTS[i1a1];[i0v0][i0a0][i0v1][i0a1][i1v0][i1a0][i1v1][i1a1]concat=n=4:v=1:a=1[cv][ca]" -map "[cv]" -c:v:0 h264_nvenc -preset p7 -tune hq -profile:v:0 high -level:v:0 auto -rc vbr -b:v:0 4M -minrate:v:0 500k -maxrate:v:0 8M -bufsize:v:0 8M -multipass disabled -fps_mode passthrough -b_ref_mode:v:0 disabled -rc-lookahead:v:0 32 -qp 4 -map "[ca]" OUTPUT.mp4
-# the `-hwaccel cuda -hwaccel_output_format cuda` must be in front of every input video (that is in the filter and gets encoded as video stream)
+# scale to WIDTH*HEIGHT with auto letter-/pilarbox and variable fps
+ffmpeg -v level+warning -stats -i INPUT_0.mp4 -i INPUT_1.mp4 -filter_complex "[0:v]trim=0:2,setpts=PTS-STARTPTS,scale=WIDTH:HEIGHT:force_original_aspect_ratio=decrease,pad=WIDTH:HEIGHT:-1:-1,setsar=1[i0v0];[0:a]atrim=0:2,asetpts=PTS-STARTPTS[i0a0];[0:v]trim=4:8,setpts=PTS-STARTPTS,scale=WIDTH:HEIGHT:force_original_aspect_ratio=decrease,pad=WIDTH:HEIGHT:-1:-1,setsar=1[i0v1];[0:a]atrim=4:8,asetpts=PTS-STARTPTS[i0a1];[1:v]trim=1:5,setpts=PTS-STARTPTS,scale=WIDTH:HEIGHT:force_original_aspect_ratio=decrease,pad=WIDTH:HEIGHT:-1:-1,setsar=1[i1v0];[1:a]atrim=1:5,asetpts=PTS-STARTPTS[i1a0];[1:v]trim=6:8,setpts=PTS-STARTPTS,scale=WIDTH:HEIGHT:force_original_aspect_ratio=decrease,pad=WIDTH:HEIGHT:-1:-1,setsar=1[i1v1];[1:a]atrim=6:8,asetpts=PTS-STARTPTS[i1a1];[i0v0][i0a0][i0v1][i0a1][i1v0][i1a0][i1v1][i1a1]concat=n=4:v=1:a=1[cv][ca]" -map "[cv]" -fps_mode vfr -map "[ca]" OUTPUT.mp4
+# for newer versions of ffmpeg, bicubic scaler is used, otherwise add `:flags=bicubic` to the scale filter to explicitly select it
+# (if you want to only scale once and reuse the stream `[...]`, then it needs to be duplicated via `[...]split=N[..0][..1][..N]` filter to use in N places)
 ```
 
-<details closed><summary>Click to show formatted filtergraph</summary>
+<details closed><summary>Click to show formatted first command</summary>
 
 ```text
-[0:v] trim=0:2, setpts=PTS-STARTPTS[i0v0];
-[0:v]atrim=0:2,asetpts=PTS-STARTPTS[i0a0];
+ffmpeg
+  -v level+warning
+  -stats
+  -i INPUT_0.mp4
+  -i INPUT_1.mp4
+  -filter_complex "
+    [0:v] trim=0:2, setpts=PTS-STARTPTS[i0v0];
+    [0:a]atrim=0:2,asetpts=PTS-STARTPTS[i0a0];
 
-[0:v] trim=4:8, setpts=PTS-STARTPTS[i0v1];
-[0:v]atrim=4:8,asetpts=PTS-STARTPTS[i0a1];
+    [0:v] trim=4:8, setpts=PTS-STARTPTS[i0v1];
+    [0:a]atrim=4:8,asetpts=PTS-STARTPTS[i0a1];
 
-[1:v] trim=1:5, setpts=PTS-STARTPTS[i1v0];
-[1:v]atrim=1:5,asetpts=PTS-STARTPTS[i1a0];
+    [1:v] trim=1:5, setpts=PTS-STARTPTS[i1v0];
+    [1:a]atrim=1:5,asetpts=PTS-STARTPTS[i1a0];
 
-[1:v] trim=6:8, setpts=PTS-STARTPTS[i1v1];
-[1:v]atrim=6:8,asetpts=PTS-STARTPTS[i1a1];
+    [1:v] trim=6:8, setpts=PTS-STARTPTS[i1v1];
+    [1:a]atrim=6:8,asetpts=PTS-STARTPTS[i1a1];
 
-[i0v0][i0a0]
-[i0v1][i0a1]
-[i1v0][i1a0]
-[i1v1][i1a1]
-concat=n=4:v=1:a=1
-[cv][ca]
+    [i0v0][i0a0]
+    [i0v1][i0a1]
+    [i1v0][i1a0]
+    [i1v1][i1a1]
+    concat=n=4:v=1:a=1
+    [cv][ca]
+  "
+  -map "[cv]"
+  -map "[ca]"
+  OUTPUT.mp4
 ```
 
 </details>
 
-<details closed><summary>Click to show formatted CUDA (video output) codec arguments</summary>
+<details closed><summary>Click to show formatted second command</summary>
 
 ```text
--map "[cv]"
+ffmpeg
+  -v level+warning
+  -stats
+  -i INPUT_0.mp4
+  -i INPUT_1.mp4
+  -filter_complex "
+    [0:v]
+      trim=0:2,
+      setpts=PTS-STARTPTS,
+      scale=WIDTH:HEIGHT:force_original_aspect_ratio=decrease,
+      pad=WIDTH:HEIGHT:-1:-1,
+      setsar=1
+    [i0v0];
+    [0:a]atrim=0:2,asetpts=PTS-STARTPTS[i0a0];
 
--c:v:0 h264_nvenc
--preset p7
--tune hq
--profile:v:0 high
--level:v:0 auto
+    [0:v] trim=4:8, setpts=PTS-STARTPTS,scale=WIDTH:HEIGHT:force_original_aspect_ratio=decrease,pad=WIDTH:HEIGHT:-1:-1,setsar=1[i0v1];
+    [0:a]atrim=4:8,asetpts=PTS-STARTPTS[i0a1];
 
--rc vbr
+    [1:v] trim=1:5, setpts=PTS-STARTPTS,scale=WIDTH:HEIGHT:force_original_aspect_ratio=decrease,pad=WIDTH:HEIGHT:-1:-1,setsar=1[i1v0];
+    [1:a]atrim=1:5,asetpts=PTS-STARTPTS[i1a0];
 
--b:v:0 4M
--minrate:v:0 500k
--maxrate:v:0 8M
--bufsize:v:0 8M
+    [1:v] trim=6:8, setpts=PTS-STARTPTS,scale=WIDTH:HEIGHT:force_original_aspect_ratio=decrease,pad=WIDTH:HEIGHT:-1:-1,setsar=1[i1v1];
+    [1:a]atrim=6:8,asetpts=PTS-STARTPTS[i1a1];
 
--multipass disabled
--fps_mode passthrough
--b_ref_mode:v:0 disabled
--rc-lookahead:v:0 32
-
--qp 4
+    [i0v0][i0a0]
+    [i0v1][i0a1]
+    [i1v0][i1a0]
+    [i1v1][i1a1]
+    concat=n=4:v=1:a=1
+    [cv][ca]
+  "
+  -map "[cv]"
+  -fps_mode vfr
+  -map "[ca]"
+  OUTPUT.mp4
 ```
 
 </details>
+
+---
+
+> [!NOTE]
+>
+> if you want to use hardware acceleration like NVIDIA CUDA the `-hwaccel cuda -hwaccel_output_format cuda` is required to be in front of every `-i INPUT_N.mp4`
 
 - [`-v` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dloglevel%20%5Bflags%2B%5Dloglevel%20%7C%20%2Dv%20%5Bflags%2B%5Dloglevel "Documentation of `-loglevel [flags+]loglevel | -v [flags+]loglevel`")
 - [`-stats` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dstats%20(global) "Documentation of `-stats (global)`")
@@ -900,13 +997,19 @@ concat=n=4:v=1:a=1
   - can also be read from a file via `-filter_complex_script` with `path/to/file.txt`, although this is not mentioned in the official documentation.
   - [trim multimedia filter](https://ffmpeg.org/ffmpeg-all.html#trim "Documentation of trim filter (for `-filter_complex`)")
   - [atrim multimedia filter](https://ffmpeg.org/ffmpeg-all.html#atrim "Documentation of atrim filter (for `-filter_complex`)")
+  - [setpts/asetpts](https://ffmpeg.org/ffmpeg-all.html#setpts_002c-asetpts "Documentation of setpts and asetpts filter (for `-filter_complex`)")
+  - [scale filter documentation](https://ffmpeg.org/ffmpeg-all.html#scale-1 "Documentation for the scale filter")
+    - [scaler options](https://ffmpeg.org/ffmpeg-all.html#Scaler-Options "Documentation for scaler options")
+    - also, see the [scale video](#scale-video "Scroll to this section") section
+  - [pad filter documentation](https://ffmpeg.org/ffmpeg-all.html#pad-1 "Documentation for the pad filter")
+  - [setsar filter documentation](https://ffmpeg.org/ffmpeg-all.html#setdar_002c-setsar "Documentation for the setsar filter")
   - [concat multimedia filter](https://ffmpeg.org/ffmpeg-all.html#concat-3 "Documentation of concat filter (for `-filter_complex`)")
 - [`-map` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dmap%20%5B%2D%5Dinput_file_id%5B%3Astream_specifier%5D%5B%3F%5D%20%7C%20%5Blinklabel%5D%20(output) "Documentation of `-map [-]input_file_id[:stream_specifier][?] | [linklabel] (output)`")
+- [concat demuxer documentation](https://ffmpeg.org/ffmpeg-all.html#concat "Documentation of concat demuxer") (concat via text file)
+- [`-safe` option for concat demuxer](https://ffmpeg.org/ffmpeg-all.html#:~:text=safe,-if%20set%20to%201%2C%20reject%20unsafe%20file%20paths%20and%20directives "Documentation of `-safe` option for the concat demuxer")
 - [`-c` documentation](https://ffmpeg.org/ffmpeg-all.html#:~:text=%2Dc%5B%3Astream_specifier%5D%20codec%20(input/output%2Cper%2Dstream) "Documentation of `-c[:stream_specifier] codec (input/output,per-stream)`")
   - [Stream specifiers documentation](https://ffmpeg.org/ffmpeg-all.html#Stream-specifiers "Documentation of stream specifiers for `-c`")
-- also, see the section about [video compression](#compress-video "Scroll to the video compression section on this page") specifically with GPU hardware acceleration / NVIDIA CUDA
-  - ["this FFmpeg guide"](https://trac.ffmpeg.org/wiki/HWAccelIntro#CUDANVENCNVDEC "CUDA (NVENC/NVDEC) section of Hardware Acceleration Intro") for hardware acceleration with differend OS/hardware (specifically section _CUDA (NVENC/NVDEC)_)
-  - and ["Using FFmpeg with NVIDIA GPU Hardware Acceleration"](https://docs.nvidia.com/video-technologies/video-codec-sdk/12.0/ffmpeg-with-nvidia-gpu/ "NVIDIA Documentation Hub: Using FFmpeg with NVIDIA GPU Hardware Acceleration") on the NVIDIA Documentation Hub
+- also, see the [compress video](#compress-video "Scroll to this section") section (specifically with GPU hardware acceleration / NVIDIA CUDA)
 
 Scroll [UP](#ffmpeg-video-editing "Scroll to beginning of FFmpeg section")
     | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
