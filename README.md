@@ -83,6 +83,7 @@ Get FFmpeg from <https://ffmpeg.org/download.html>
 I currently use the FFmpeg builds from <https://www.gyan.dev/ffmpeg/builds/> (for Windows 7+)
 under the __release builds__ section the file `ffmpeg-release-full.7z`
 or directly <https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z>
+(_don't forget [7-Zip](https://www.7-zip.org/ "Official 7-Zip homepage") for unpacking the `.7z` file_)
 
 Scroll [UP](#ffmpeg-intro "Scroll to beginning of FFmpeg intro section")
     | [TOP](#some-useful-ffmpeg-commands "Scroll to top of document")
